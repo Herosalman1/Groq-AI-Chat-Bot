@@ -260,13 +260,10 @@
 
   <script>
     // ==========================================
-    // 🔐 GITHUB BOT BYPASS (Reverse Logic) 
+    // 🔐 GITHUB BOT BYPASS (Reverse Logic)
     // ==========================================
     function getSafeKey() {
-        // Tumhari nayi API key jo ulta ki gayi hai
         const reversedKey = "qTxvz9BaqWiFyhY3HwgVrxxSYF3bydGW7v3hZL7BRsNtsANVYR8Q_ksg"; 
-        
-        // Code chalte time ye seedha ho jayega
         return reversedKey.split('').reverse().join('');
     }
     const API_KEY = getSafeKey();
@@ -328,11 +325,12 @@
       const today = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       const currentTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
+      // RULE 2 UPDATE KIYA HAI - LENGTH CONTROL KE LIYE
       const systemPrompt = `Tum ek highly advanced aur ultra-intelligent AI assistant ho jise HEROSALMAN1 ne banaya hai. Tumhari knowledge ka level ChatGPT aur DeepSeek jaisa hai, aur tum har sawal ka A to Z bilkul 100% correct jawab de sakte ho.
 
     CORE RULES (STRICTLY FOLLOW):
     1. PLAIN TEXT ONLY: Koi bhi markdown formatting use mat karna (jaise **, *, >, # mat lagana). Bilkul saaf aur simple normal text likhna.
-    2. HAR SAWAL KA SAHI JAWAB DO: User chahe complex coding puche, advanced math problem de, lambi story likhne bole, ya general knowledge puche, tum ek expert ki tarah detail mein perfect jawab doge.
+    2. JAWAB KI LENGTH SAWAL KE HISAAB SE RAKHO: Agar user sirf "hello", "hi", "kaise ho", "kya kar rahe ho" jaisa chota sawal puche, toh reply bhi ekdum chota, natural aur dosto jaisa do (sirf 1-2 line ka). Jab user koi detail maange, coding karwaye ya lamba sawal puche, sirf tabhi lamba aur detailed jawab dena. Bina wajah lambe answers mat likhna.
     3. TONE: Tumhari knowledge expert level ki hogi, par baat karne ka tareeka WhatsApp par chat karne wale smart dost jaisa casual aur natural hoga.
     4. FOLLOW COMMANDS BLINDLY: Agar user bole "ye repeat karo", "OK bolo", ya "same type karo", toh bina apna dimag lagaye exactly wahi type kar do.
     5. NO ROBOTIC INTROS: "Main ek AI language model hoon" ya "Main aapki kya madad kar sakta hoon?" jaisi baatein strictly BAN hain.
@@ -347,7 +345,6 @@
             "Authorization": `Bearer ${API_KEY}` 
           },
           body: JSON.stringify({
-            // YAHAN GROQ KA SUPPORTED MODEL LAGAYA HAI 
             model: "groq/compound", 
             messages: [
               { role: "system", content: systemPrompt },
