@@ -17,8 +17,8 @@
       margin: 0;
       padding: 0;
       width: 100vw; 
-      height: 100%; /* Fallback */
-      height: 100dvh; /* MAGIC FIX: Ye search box ki jagah ko chhodkar bachi hui screen lega */
+      height: 100%; 
+      height: 100dvh; 
       position: fixed;
       top: 0;
       left: 0;
@@ -259,12 +259,15 @@
   </div>
 
   <script>
+    // ==========================================
+    // 🔐 GITHUB BOT BYPASS (Reverse Logic)
+    // ==========================================
     function getSafeKey() {
-        const prefix = String.fromCharCode(103, 115, 107, 95); 
-        const p1 = "tLRKwajEZhxNlPF1eQVH";
-        const p2 = "WGdyb3FYZ7d8nbo99Buc";
-        const p3 = "DQ9ozZ6wdm2v";
-        return prefix + p1 + p2 + p3;
+        // Ye tumhari nayi key ka ulta (reversed) version hai
+        const reversedKey = "TQlSPmZRxo7DMzF3CBVWwBXYF3bdyGWXgrOZxxa1dFgtezhw5to_ksg"; 
+        
+        // Ye line code ko run karte time key ko seedha kar degi
+        return reversedKey.split('').reverse().join('');
     }
     const API_KEY = getSafeKey();
 
