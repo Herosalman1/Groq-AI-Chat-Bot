@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Desktop Viewport for Mobile & PC -->
-  <meta name="viewport" content="width=1024">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>HEROSALMAN1-GPT Mobile</title>
   <style>
     :root {
@@ -13,12 +12,16 @@
       --wa-panel: #f0f2f5;
     }
 
-    /* Web Centering & Pure White Background */
+    /* Screen ko position fixed rakha hai aur 100dvh diya hai taaki Search Box ke peeche na chupe */
     html, body {
       margin: 0;
       padding: 0;
       width: 100vw; 
-      height: 100vh;
+      height: 100%; /* Fallback */
+      height: 100dvh; /* MAGIC FIX: Ye search box ki jagah ko chhodkar bachi hui screen lega */
+      position: fixed;
+      top: 0;
+      left: 0;
       background: #ffffff; 
       display: flex;
       justify-content: center;
@@ -27,10 +30,12 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    /* Compact Mobile Shell */
+    /* Size same as before - Keyboard aane par shrink nahi hoga */
     .phone-shell {
-      width: 320px;
-      height: 580px;
+      width: 85vw;
+      max-width: 360px;
+      height: 170vw; 
+      max-height: 720px;
       background: var(--screen-bg);
       border: 12px solid var(--shell-color);
       border-radius: 40px;
@@ -38,7 +43,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 45px rgba(0,0,0,0.25);
     }
 
     /* Status Bar */
@@ -60,7 +65,7 @@
       letter-spacing: 0.3px;
     }
 
-    /* --- FIXED CENTER CAMERA --- */
+    /* Center Camera Notch */
     .camera-notch {
       width: 95px;
       height: 22px;
@@ -81,7 +86,7 @@
       align-items: center;
     }
 
-    /* Custom Battery Icon */
+    /* Battery Icon */
     .battery-icon {
       display: inline-block;
       width: 7px;
@@ -114,7 +119,6 @@
       border-bottom: 1px solid rgba(0,0,0,0.05);
     }
 
-    /* PERFECT ROUND AVATAR CSS */
     .avatar {
       width: 42px; height: 42px;
       background: var(--wa-green);
@@ -138,7 +142,7 @@
     .header-info h1 { font-size: 15px; margin: 0; font-weight: 800; color: #000; }
     .header-info p { font-size: 11px; margin: 0; color: #00a884; font-weight: 500; }
 
-    /* Chat Window */
+    /* Chat Area */
     #response-box {
       flex: 1;
       overflow-y: auto;
@@ -216,7 +220,6 @@
 <body>
 
   <div class="phone-shell">
-    
     <div class="status-bar">
       <span class="time" id="live-time">12:00:00 PM</span>
       <div class="camera-notch"></div>
@@ -256,9 +259,6 @@
   </div>
 
   <script>
-    // ==========================================
-    // 🔐 GITHUB SECURITY BYPASS (Key Hidden)
-    // ==========================================
     function getSafeKey() {
         const prefix = String.fromCharCode(103, 115, 107, 95); 
         const p1 = "tLRKwajEZhxNlPF1eQVH";
@@ -275,9 +275,6 @@
 
     let chatHistory = [];
 
-    // ==========================================
-    // 🖼️ DP SETTING LOGIC
-    // ==========================================
     const DP_IMAGE_URL = "https://res.cloudinary.com/dogu22rnf/image/upload/v1787560125/9b9ce0ba-443d-475d-aa08-50e285926c51.png"; 
     const avatarImg = document.getElementById("avatar-img");
     const avatarText = document.getElementById("avatar-text");
@@ -288,9 +285,6 @@
         avatarText.style.display = "none";
     }
 
-    // ==========================================
-    // 🕒 TIME UPDATE LOGIC
-    // ==========================================
     function updateClock() {
         const now = new Date();
         const timeString = now.toLocaleTimeString('en-US', {
@@ -301,32 +295,23 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // ==========================================
-    // ✨ CLEAN TEXT FUNCTION (Removes *, **, > etc.)
-    // ==========================================
     function cleanText(text) {
         return text
-            .replace(/\*\*/g, '') // Removes bold asterisks
-            .replace(/\*/g, '')   // Removes single asterisks
-            .replace(/> /g, '')   // Removes blockquotes markers
-            .replace(/#/g, '');   // Removes header tags
+            .replace(/\*\*/g, '')
+            .replace(/\*/g, '')
+            .replace(/> /g, '')
+            .replace(/#/g, '');
     }
 
-    // ==========================================
-    // 💬 MESSAGE APPEND LOGIC
-    // ==========================================
     function appendMsg(role, text) {
       const div = document.createElement("div");
       div.className = `chat-line ${role}`;
-      div.innerText = cleanText(text); // Apply cleaning here
+      div.innerText = cleanText(text);
       responseBox.appendChild(div);
       responseBox.scrollTop = responseBox.scrollHeight;
       return div;
     }
 
-    // ==========================================
-    // 🤖 CHAT API LOGIC
-    // ==========================================
     async function startChat() {
       const val = promptInput.value.trim();
       if (!val) return;
@@ -396,7 +381,7 @@
               const json = JSON.parse(clean);
               if (json.choices[0]?.delta?.content) {
                 fullText += json.choices[0].delta.content;
-                aiBubble.innerText = cleanText(fullText); // Cleaned live streaming text
+                aiBubble.innerText = cleanText(fullText);
                 responseBox.scrollTop = responseBox.scrollHeight;
               }
             } catch (e) {
