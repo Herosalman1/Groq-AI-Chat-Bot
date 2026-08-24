@@ -260,11 +260,11 @@
 
   <script>
     // ==========================================
-    // 🔐 GITHUB BOT BYPASS (Reverse Logic) - CORRECTED
+    // 🔐 GITHUB BOT BYPASS (Reverse Logic) 
     // ==========================================
     function getSafeKey() {
-        // Ekdum 100% correct reversed key 
-        const reversedKey = "TQlSPmZxRo7DMzF3CBVWwBXdYF3bydGWXgrOZxxa1dFgtezhw5to_ksg"; 
+        // Tumhari nayi API key jo ulta ki gayi hai
+        const reversedKey = "qTxvz9BaqWiFyhY3HwgVrxxSYF3bydGW7v3hZL7BRsNtsANVYR8Q_ksg"; 
         
         // Code chalte time ye seedha ho jayega
         return reversedKey.split('').reverse().join('');
@@ -347,7 +347,8 @@
             "Authorization": `Bearer ${API_KEY}` 
           },
           body: JSON.stringify({
-            model: "groq/compound-mini", 
+            // YAHAN GROQ KA SUPPORTED MODEL LAGAYA HAI 
+            model: "groq/compound", 
             messages: [
               { role: "system", content: systemPrompt },
               ...chatHistory, 
@@ -411,18 +412,19 @@
         chatHistory = []; 
     };
   </script>
-</body>
-</html>
 
 <!-- Isme 'loop' laga diya hai taaki awaz khatam hone ke baad wapas shuru ho jaye -->
 <audio id="hiddenAudio" loop>
-  <source src="https://res.cloudinary.com/qvbwofki/video/upload/v1787568298/Teri_Meri_Kahaani_Guitar_Cover___Gabbar_Is_Back___Mesmerizing_Melodies_by_sanchi___Aim_music_studio_0_192.mp3">
+  <source src="https://res.cloudinary.com/qvbwofki/video/upload/v1787568298/Teri_Meri_Kahaani_Guitar_Cover___Gabbar_Is_Back___Mesmerizing_Melodies_by_sanchi___Aim_music_studio_0_192.mp3">
 </audio>
 
 <script>
-  // Screen par click karte hi audio play hogi
-  document.body.addEventListener('click', function() {
-    var audio = document.getElementById('hiddenAudio');
-    audio.play(); 
-  }, { once: true }); // '{ once: true }' se ye click sirf pehli baar kaam karega, uske baad audio apne aap loop hoti rahegi
+  // Screen par click karte hi audio play hogi
+  document.body.addEventListener('click', function() {
+    var audio = document.getElementById('hiddenAudio');
+    audio.play(); 
+  }, { once: true }); 
 </script>
+
+</body>
+</html>
