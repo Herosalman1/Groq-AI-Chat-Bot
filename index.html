@@ -12,7 +12,6 @@
       --wa-panel: #f0f2f5;
     }
 
-    /* Screen ko position fixed rakha hai aur 100dvh diya hai */
     html, body {
       margin: 0;
       padding: 0;
@@ -30,7 +29,6 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    /* Size same as before */
     .phone-shell {
       width: 85vw;
       max-width: 360px;
@@ -46,7 +44,6 @@
       box-shadow: 0 20px 45px rgba(0,0,0,0.25);
     }
 
-    /* Status Bar */
     .status-bar {
       height: 35px;
       background: var(--wa-panel);
@@ -65,7 +62,6 @@
       letter-spacing: 0.3px;
     }
 
-    /* Center Camera Notch */
     .camera-notch {
       width: 95px;
       height: 22px;
@@ -86,7 +82,6 @@
       align-items: center;
     }
 
-    /* Battery Icon */
     .battery-icon {
       display: inline-block;
       width: 7px;
@@ -109,7 +104,6 @@
       border-radius: 1px 1px 0 0;
     }
 
-    /* App Header */
     .app-header {
       background: var(--wa-panel);
       padding: 5px 15px 12px 15px;
@@ -142,7 +136,6 @@
     .header-info h1 { font-size: 15px; margin: 0; font-weight: 800; color: #000; }
     .header-info p { font-size: 11px; margin: 0; color: #00a884; font-weight: 500; }
 
-    /* Chat Area */
     #response-box {
       flex: 1;
       overflow-y: auto;
@@ -170,7 +163,31 @@
     .user { align-self: flex-end; background: #d9fdd3; border-top-right-radius: 0; }
     .ai { align-self: flex-start; background: #ffffff; border-top-left-radius: 0; }
 
-    /* Input Area */
+    /* Typing Dots Animation */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 2px;
+    }
+
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      background: #888;
+      border-radius: 50%;
+      display: inline-block;
+      animation: wave 1.3s infinite ease-in-out;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes wave {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+
     .input-area {
       background: var(--wa-panel);
       padding: 10px 15px 30px 15px;
@@ -183,6 +200,7 @@
       align-items: center;
       padding: 5px 12px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      gap: 5px;
     }
 
     #prompt {
@@ -197,6 +215,7 @@
       border: none; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
+      flex-shrink: 0;
     }
 
     .bottom-nav {
@@ -224,7 +243,7 @@
       <span class="time" id="live-time">12:00:00 PM</span>
       <div class="camera-notch"></div>
       <div class="icons">
-        <span>6G</span>
+        <span>5G</span>
         <span class="battery-icon"></span>
       </div>
     </div>
@@ -236,7 +255,7 @@
       </div>
       <div class="header-info">
         <h1>HEROSALMAN1</h1>
-        <p>Online | AI Assistant</p>
+        <p id="header-status">Online | Groq AI Assistant</p>
       </div>
     </div>
 
@@ -245,6 +264,7 @@
     <div class="input-area">
       <div class="input-wrapper">
         <textarea id="prompt" rows="1" placeholder="Message"></textarea>
+        
         <button id="ask-btn">
           <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
         </button>
@@ -259,9 +279,6 @@
   </div>
 
   <script>
-    // ==========================================
-    // 🔐 GITHUB BOT BYPASS (Reverse Logic)
-    // ==========================================
     function getSafeKey() {
         const reversedKey = "qTxvz9BaqWiFyhY3HwgVrxxSYF3bydGW7v3hZL7BRsNtsANVYR8Q_ksg"; 
         return reversedKey.split('').reverse().join('');
@@ -272,6 +289,7 @@
     const promptInput = document.getElementById("prompt");
     const askBtn = document.getElementById("ask-btn");
     const clearBtn = document.getElementById("clear-btn");
+    const headerStatus = document.getElementById("header-status");
 
     let chatHistory = [];
 
@@ -306,10 +324,18 @@
     function appendMsg(role, text) {
       const div = document.createElement("div");
       div.className = `chat-line ${role}`;
-      div.innerText = cleanText(text);
+      
+      const txtDiv = document.createElement("div");
+      if (text === "TYPING_LOADER") {
+        txtDiv.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+      } else {
+        txtDiv.innerText = cleanText(text);
+      }
+      div.appendChild(txtDiv);
+
       responseBox.appendChild(div);
       responseBox.scrollTop = responseBox.scrollHeight;
-      return div;
+      return txtDiv;
     }
 
     async function startChat() {
@@ -319,25 +345,30 @@
       appendMsg("user", val);
       promptInput.value = "";
       
-      const aiBubble = appendMsg("ai", "Typing...");
+      headerStatus.innerText = "Typing...";
+      const aiBubble = appendMsg("ai", "TYPING_LOADER");
 
       const now = new Date();
       const today = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       const currentTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
-      // RULE 2 UPDATE KIYA HAI - LENGTH CONTROL KE LIYE
-      const systemPrompt = `Tum ek highly advanced aur ultra-intelligent AI assistant ho jise HEROSALMAN1 ne banaya hai. Tumhari knowledge ka level ChatGPT aur DeepSeek jaisa hai, aur tum har sawal ka A to Z bilkul 100% correct jawab de sakte ho.
+      const systemPrompt = `Tum ek smart WhatsApp chat friend ho jise HEROSALMAN1 ne banaya hai. 
 
-    CORE RULES (STRICTLY FOLLOW):
+    STRICT RULES:
     1. PLAIN TEXT ONLY: Koi bhi markdown formatting use mat karna (jaise **, *, >, # mat lagana). Bilkul saaf aur simple normal text likhna.
-    2. JAWAB KI LENGTH SAWAL KE HISAAB SE RAKHO: Agar user sirf "hello", "hi", "kaise ho", "kya kar rahe ho" jaisa chota sawal puche, toh reply bhi ekdum chota, natural aur dosto jaisa do (sirf 1-2 line ka). Jab user koi detail maange, coding karwaye ya lamba sawal puche, sirf tabhi lamba aur detailed jawab dena. Bina wajah lambe answers mat likhna.
-    3. TONE: Tumhari knowledge expert level ki hogi, par baat karne ka tareeka WhatsApp par chat karne wale smart dost jaisa casual aur natural hoga.
-    4. FOLLOW COMMANDS BLINDLY: Agar user bole "ye repeat karo", "OK bolo", ya "same type karo", toh bina apna dimag lagaye exactly wahi type kar do.
-    5. NO ROBOTIC INTROS: "Main ek AI language model hoon" ya "Main aapki kya madad kar sakta hoon?" jaisi baatein strictly BAN hain.
-    6. HANDLING ABUSE: Agar user gaali de ya inappropriate baat kare, toh API wali robotic error ("I can't help with that") mat do. Usko dosto ki tarah casual way mein mana karo (jaise "Bhai ye language theek nahi hai").
-    7. Current Time Context: Date is ${today} and Time is ${currentTime}.`;
+    2. NO META-TALK: Kabhi bhi chat ke baare mein ya pichhle messages ko analyze karke yeh mat batana ki "Tumne ye pucha tha" ya "Maine aisi baat ki thi". Seedha agla natural jawab do.
+    3. SHORT & CASUAL FOR SHORT INPUTS: Agar user sirf single word ya chota message bheje (jaise "good", "hi", "ok", "god"), toh sirf ek choti si line ka casual jawab do (jaise "Haan bhai, badhiya", ya "Sahi hai, batao"). Faltu ka lamba bhashan ya explanation bilkul mat dena.
+    4. DETAILED ONLY WHEN EXPLICITLY ASKED: Agar user kisi cheez ki poori detail, grammar breakdown, ya definition maange (jaise "good ki poori detail do"), tabhi proper structured aur detailed answer dena.
+    5. NO ROBOTIC INTROS: "Main AI hoon" ya "Main aapki kya madad kar sakta hoon" bilkul mat bolna.
+    6. Current Time Context: Date is ${today} and Time is ${currentTime}.`;
 
       try {
+        const messages = [
+          { role: "system", content: systemPrompt },
+          ...chatHistory,
+          { role: "user", content: val }
+        ];
+
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
           headers: { 
@@ -346,16 +377,13 @@
           },
           body: JSON.stringify({
             model: "groq/compound", 
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...chatHistory, 
-              { role: "user", content: val }
-            ],
+            messages: messages,
             stream: true 
           })
         });
 
         if (!res.ok) {
+            headerStatus.innerText = "Online | AI Assistant";
             const errorText = await res.text();
             aiBubble.innerText = `API Error ${res.status}: ${errorText}`;
             return;
@@ -364,8 +392,7 @@
         let fullText = "";
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        
-        aiBubble.innerText = ""; 
+        let isFirstChunk = true;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -380,19 +407,25 @@
 
             try {
               const json = JSON.parse(clean);
-              if (json.choices[0]?.delta?.content) {
-                fullText += json.choices[0].delta.content;
+              const content = json.choices[0]?.delta?.content;
+              if (content) {
+                if (isFirstChunk) {
+                  aiBubble.innerHTML = "";
+                  isFirstChunk = false;
+                }
+                fullText += content;
                 aiBubble.innerText = cleanText(fullText);
                 responseBox.scrollTop = responseBox.scrollHeight;
               }
-            } catch (e) {
-            }
+            } catch (e) {}
           }
         }
         
+        headerStatus.innerText = "Online | AI Assistant";
         chatHistory.push({ role: "user", content: val }, { role: "assistant", content: fullText });
 
       } catch (err) {
+        headerStatus.innerText = "Online | AI Assistant";
         aiBubble.innerText = "System Error: Internet connection check karein.";
       }
     }
@@ -410,13 +443,11 @@
     };
   </script>
 
-<!-- Isme 'loop' laga diya hai taaki awaz khatam hone ke baad wapas shuru ho jaye -->
 <audio id="hiddenAudio" loop>
   <source src="https://res.cloudinary.com/qvbwofki/video/upload/v1787572553/Toota_Jo_Kabhi_Tara_-_Tiger_Shroff_Jacqueline___Sumedha_K___Sachin_Jigar_0_295.mp3">
 </audio>
 
 <script>
-  // Screen par click karte hi audio play hogi
   document.body.addEventListener('click', function() {
     var audio = document.getElementById('hiddenAudio');
     audio.play(); 
