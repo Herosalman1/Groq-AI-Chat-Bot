@@ -362,71 +362,91 @@
     5. NO ROBOTIC INTROS: "Main AI hoon" ya "Main aapki kya madad kar sakta hoon" bilkul mat bolna.
     6. Current Time Context: Date is ${today} and Time is ${currentTime}.`;
 
-      try {
-        const messages = [
-          { role: "system", content: systemPrompt },
-          ...chatHistory,
-          { role: "user", content: val }
-        ];
+      const messages = [
+        { role: "system", content: systemPrompt },
+        ...chatHistory,
+        { role: "user", content: val }
+      ];
 
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json", 
-            "Authorization": `Bearer ${API_KEY}` 
-          },
-          body: JSON.stringify({
-            model: "groq/compound", 
-            messages: messages,
-            stream: true 
-          })
-        });
+      // Groq Deprecations Doc ke Recommended Replacement Models ki list
+      const modelsToTry = [
+        "openai/gpt-oss-20b",
+        "qwen/qwen3.8-27b",
+        "openai/gpt-oss-120b"
+      ];
 
-        if (!res.ok) {
-            headerStatus.innerText = "Online | AI Assistant";
-            const errorText = await res.text();
-            aiBubble.innerText = `API Error ${res.status}: ${errorText}`;
-            return;
-        }
+      let success = false;
+      let lastErrorMessage = "";
 
-        let fullText = "";
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let isFirstChunk = true;
+      for (let i = 0; i < modelsToTry.length; i++) {
+        const currentModel = modelsToTry[i];
+        try {
+          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json", 
+              "Authorization": `Bearer ${API_KEY}` 
+            },
+            body: JSON.stringify({
+              model: currentModel, 
+              messages: messages,
+              stream: true 
+            })
+          });
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n");
-
-          for (const line of lines) {
-            const clean = line.replace(/^data: /, "").trim();
-            if (!clean || clean === "[DONE]") continue;
-
-            try {
-              const json = JSON.parse(clean);
-              const content = json.choices[0]?.delta?.content;
-              if (content) {
-                if (isFirstChunk) {
-                  aiBubble.innerHTML = "";
-                  isFirstChunk = false;
-                }
-                fullText += content;
-                aiBubble.innerText = cleanText(fullText);
-                responseBox.scrollTop = responseBox.scrollHeight;
-              }
-            } catch (e) {}
+          if (!res.ok) {
+              const errBody = await res.text();
+              lastErrorMessage = `API Error ${res.status}: ${errBody}`;
+              console.warn(`Model ${currentModel} fail hua: ${lastErrorMessage}. Trying next...`);
+              continue; // Next model pe jao
           }
-        }
-        
-        headerStatus.innerText = "Online | AI Assistant";
-        chatHistory.push({ role: "user", content: val }, { role: "assistant", content: fullText });
 
-      } catch (err) {
-        headerStatus.innerText = "Online | AI Assistant";
-        aiBubble.innerText = "System Error: Internet connection check karein.";
+          success = true;
+          let fullText = "";
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let isFirstChunk = true;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n");
+
+            for (const line of lines) {
+              const clean = line.replace(/^data: /, "").trim();
+              if (!clean || clean === "[DONE]") continue;
+
+              try {
+                const json = JSON.parse(clean);
+                const content = json.choices[0]?.delta?.content;
+                if (content) {
+                  if (isFirstChunk) {
+                    aiBubble.innerHTML = "";
+                    isFirstChunk = false;
+                  }
+                  fullText += content;
+                  aiBubble.innerText = cleanText(fullText);
+                  responseBox.scrollTop = responseBox.scrollHeight;
+                }
+              } catch (e) {}
+            }
+          }
+          
+          headerStatus.innerText = "Online | AI Assistant";
+          chatHistory.push({ role: "user", content: val }, { role: "assistant", content: fullText });
+          break; // Response complete hone par loop stop
+
+        } catch (err) {
+            lastErrorMessage = err.message || "Network Error";
+            console.error(`Error with model ${currentModel}:`, err);
+        }
+      }
+
+      if (!success) {
+          headerStatus.innerText = "Online | AI Assistant";
+          aiBubble.innerText = `System Error: Koi bhi model connect nahi ho paya. (${lastErrorMessage})`;
       }
     }
 
